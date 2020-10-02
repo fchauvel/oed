@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>OeD: Open-ended Dependency Analysis</title>
+    <link rel="stylesheet" href="https://unpkg.com/docute@4/dist/docute.css">
+  </head>
+  <body>
+    <div id="docute"></div>
+    <script src="https://unpkg.com/docute@4/dist/docute.js"></script>
+    <script>
+      new Docute({
+          target: '#docute',
+	  title: "OeD: Open-ended Dependency Analyzer",
+	  editLinkBase: "https://github.com/fchauvel/quick-check/blob/master/docs",
+	  nav: [
+	      {
+		  title: 'Home',
+		  link: '/'
+	      },
+	      {
+		  title: 'GitHub',
+		  link: 'https://github.com/fchauvel/quick-check'
+	      }
+	  ],
+	  sidebar: [
+	      {
+		  title: "How to Install 'oed'?",
+		  link: "./install.md"
+	      },
+	      {
+		  title: "Developer Guide",
+		  collapsable: true,
+		  children: [
+		      {
+			  title: "Documentation",
+			  link: "./documentation.md"
+		      }
+		  ]
+	      },
+	      {
+		  title: "Change Log",
+		  link: "CHANGELOG.md"  
+	      }
+	  ],
+	  routes: {
+	      "/CHANGELOG.md": {
+		  file: "https://raw.githubusercontent.com/fchauvel/quick-check/master/CHANGELOG.md"
+	      }
+	  },
+	  highlight: ['typescript', 'bash', 'shell-session', 'yaml', 'json']
+      })
+    </script>
+    </script src="https://unpkg.com/prismjs@1.19.0/components/prism-typescript.min.js" >
+  </body>
+</html>
