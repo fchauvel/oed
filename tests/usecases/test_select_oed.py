@@ -9,16 +9,35 @@
 #
 
 
-from oed import OeD
+from oed import OeD, Packages, Package, Release, Requirement
 
 from unittest import TestCase
 
 
+
+class PackagesStub(Packages):
+
+    def __init__(self):
+        super().__init__(
+            [
+                Package("Sphinx",
+                        [ Release("1.0",
+                                  [ Requirement(self, "alabaster")])
+                        ]),
+                Package("alabaster",
+                        [ Release("1.0"),
+                          Release("2.0")])
+            ]);
+
+
+        
 class SelectOeD(TestCase):
 
+    
     def setUp(self):
-        self.system = OeD()
+        self.packages = PackagesStub()
+        self.system = OeD(self.packages)
         
     def test_select_oed(self):
-        requirement = self.system.select("Sphinx", "2.3", "alabaster")
-        self.assertTrue(requirement.is_open_ended)
+        requirements = self.system.select("Sphinx", "1.0", "alabaster")
+        self.assertTrue(all(r.is_open_ended for r in requirements))
