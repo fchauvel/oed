@@ -9,7 +9,7 @@
 #
 
 
-from oed import OeD, Packages, Package, Release, Requirement
+from oed import OeD, Packages, Package, Release, Requirement, UnknownPackage, UnknownRelease
 
 from unittest import TestCase
 
@@ -38,6 +38,18 @@ class SelectOeD(TestCase):
         self.packages = PackagesStub()
         self.system = OeD(self.packages)
         
-    def test_select_oed(self):
+    def test_select_o(self):
         requirements = self.system.select("Sphinx", "1.0", "alabaster")
         self.assertTrue(all(r.is_open_ended for r in requirements))
+
+    def test_when_version_does_not_exist(self):
+        with self.assertRaises(UnknownRelease):
+            requirements = self.system.select("Sphinx", "2.0", "alabaster")
+
+    def test_when_source_package_does_not_exist(self):
+        with self.assertRaises(UnknownPackage):
+            requirements = self.system.select("Unknown", "1.0", "alabaster")
+            
+    def test_when_target_package_does_not_exist(self):
+        with self.assertRaises(UnknownPackage):
+            requirements = self.system.select("Sphinx", "1.0", "unknown")

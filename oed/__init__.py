@@ -28,7 +28,7 @@ class Packages:
         for any_package in self._packages:
             if any_package.name == package_name:
                 return any_package
-        raise ValueError("No package named '{}'".format(package_name))
+        raise UnknownPackage(package_name)
 
 
     
@@ -57,7 +57,7 @@ class Package:
         for any_release  in self._releases:
             if any_release.name == name:
                 return any_release
-        raise ValueError("No release named '{}'".format(name))
+        raise UnknownRelease(self._name, name)
 
     
 
@@ -108,6 +108,16 @@ class Requirement:
     def is_satisfied_by(self, release):
         return release.name in self._specification
 
+
+class UnknownPackage(Exception):
+
+    def __init__(self, package_name):
+        super().__init__("Unknown package '{}'".format(package_name))
+
+class UnknownRelease(Exception):
+
+    def __init__(self, package_name, release_name):
+        super().__init__("Unknown release '{}' for package '{}'".format(release_name, package_name))
     
 
 class OeD:
