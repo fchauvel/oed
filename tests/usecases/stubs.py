@@ -8,8 +8,8 @@
 # of the MIT license.  See the LICENSE file for details.
 #
 
-from oed import Package, Packages, Release, Requirement
 
+from oed.library import Package, Packages, Release, Requirement
 
 
 class PackagesStub(Packages):

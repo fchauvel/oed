@@ -9,7 +9,7 @@
 #
 
 
-from oed import OeD, Package, Packages, Release, Requirement
+from oed import OeD
 
 from tests.usecases.stubs import PackagesStub
 

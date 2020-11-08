@@ -9,7 +9,8 @@
 #
 
 
-from oed import OeD,  UnknownPackage, UnknownRelease
+from oed import OeD
+from oed.library import UnknownPackage, UnknownRelease
 
 from tests.usecases.stubs import PackagesStub
 
