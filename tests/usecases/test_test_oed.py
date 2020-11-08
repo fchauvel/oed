@@ -10,6 +10,7 @@
 
 
 from oed import OeD
+from oed.laboratory import Laboratory
 
 from tests.usecases.stubs import PackagesStub
 
@@ -20,15 +21,13 @@ class TestOeD(TestCase):
 
     def setUp(self):
         packages = PackagesStub()
-        self.system = OeD(packages)
-
+        laboratory = Laboratory()
+        self.system = OeD(packages, laboratory)
 
     def test_success_scenario(self):
-        initial_test_count = len(self.system.experiments())
-
         session = self.system.new_testing_session()
         requirements = self.system.select("Sphinx", "1.0", "alabaster")
         session.add(requirements)
         session.start()
 
-        self.assertTrue(initial_test_count + 2)
+        self.assertEqual(2, len(self.system.experiments()))

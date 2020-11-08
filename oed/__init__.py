@@ -8,7 +8,9 @@
 # of the MIT license.  See the LICENSE file for details.
 #
 
+
 from oed.library import Packages
+from oed.laboratory import Experiment, Laboratory
 
 
 class TestingSession:
@@ -24,21 +26,18 @@ class TestingSession:
     def start(self):
         for each_requirement in self._target_requirements:
             for each_candidate_release in  each_requirement.candidate_releases:
-                experiment = Experiment("sphinx", "1.0", each_requirement, each_candidate_release)
-                self._oed.start_experiment(experiment)
+                self._oed.start_experiment("sphinx", 
+                                           "1.0", 
+                                           each_requirement._specification, 
+                                           each_candidate_release.name)
 
-
-class Experiment:
-
-    def __init__(self, source, release, requirement, selected_candidate):
-        pass
 
 
 class OeD:
 
-    def __init__(self, packages):
-        self._packages = packages
-        self._experiments = [] #Fake
+    def __init__(self, packages=None, laboratory=None):
+        self._packages = packages or Packages()
+        self._laboratory = laboratory or Laboratory()
 
     def select(self, source_name, source_version, target_name):
         target = self._packages.find_package(target_name)
@@ -49,7 +48,13 @@ class OeD:
         return TestingSession(self)
 
     def experiments(self):
-        return []
+        return self._laboratory.experiments
 
-    def start_experiment(self, experiment):
-        self._experiments.append(experiment) # Fake
+    def start_experiment(self, source_package, source_release, requirement, resolution):
+        experiment = self._laboratory.new_experiment(
+            source_package,
+            source_release,
+            requirement,
+            resolution
+        )
+        experiment.start()

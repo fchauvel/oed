@@ -14,8 +14,8 @@ from pkg_resources import Requirement as PKGRequirement
 
 class Packages:
 
-    def __init__(self, packages):
-        self._packages = packages
+    def __init__(self, packages=None):
+        self._packages = packages or []
     
     def find_requirement(self, text):
         return Requirement(self, text)
