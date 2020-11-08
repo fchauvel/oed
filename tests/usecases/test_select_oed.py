@@ -9,25 +9,11 @@
 #
 
 
-from oed import OeD, Packages, Package, Release, Requirement, UnknownPackage, UnknownRelease
+from oed import OeD,  UnknownPackage, UnknownRelease
+
+from tests.usecases.stubs import PackagesStub
 
 from unittest import TestCase
-
-
-
-class PackagesStub(Packages):
-
-    def __init__(self):
-        super().__init__(
-            [
-                Package("Sphinx",
-                        [ Release("1.0",
-                                  [ Requirement(self, "alabaster")])
-                        ]),
-                Package("alabaster",
-                        [ Release("1.0"),
-                          Release("2.0")])
-            ]);
 
 
         
@@ -44,12 +30,12 @@ class SelectOeD(TestCase):
 
     def test_when_version_does_not_exist(self):
         with self.assertRaises(UnknownRelease):
-            requirements = self.system.select("Sphinx", "2.0", "alabaster")
+            self.system.select("Sphinx", "2.0", "alabaster")
 
     def test_when_source_package_does_not_exist(self):
         with self.assertRaises(UnknownPackage):
-            requirements = self.system.select("Unknown", "1.0", "alabaster")
+            self.system.select("Unknown", "1.0", "alabaster")
             
     def test_when_target_package_does_not_exist(self):
         with self.assertRaises(UnknownPackage):
-            requirements = self.system.select("Sphinx", "1.0", "unknown")
+            self.system.select("Sphinx", "1.0", "unknown")
