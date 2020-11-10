@@ -9,8 +9,10 @@
 #
 
 
+
 from oed.library import Packages
 from oed.laboratory import Experiment, Laboratory
+
 
 
 class TestingSession:
@@ -26,10 +28,10 @@ class TestingSession:
     def start(self):
         for each_requirement in self._target_requirements:
             for each_candidate_release in  each_requirement.candidate_releases:
-                self._oed.start_experiment("sphinx", 
-                                           "1.0", 
-                                           each_requirement._specification, 
-                                           each_candidate_release.name)
+                self._oed.start_experiment("sphinx", # Fake
+                                           "1.0", # Fake
+                                           each_requirement, 
+                                           each_candidate_release)
 
 
 
@@ -47,14 +49,15 @@ class OeD:
     def new_testing_session(self):
         return TestingSession(self)
 
+    @property
     def experiments(self):
         return self._laboratory.experiments
 
-    def start_experiment(self, source_package, source_release, requirement, resolution):
+    def start_experiment(self, source_package, source_release, requirement, selected_release):
         experiment = self._laboratory.new_experiment(
             source_package,
             source_release,
-            requirement,
-            resolution
+            requirement.required_package.name,
+            selected_release.name
         )
         experiment.start()
