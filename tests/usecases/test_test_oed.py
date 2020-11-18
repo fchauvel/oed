@@ -11,17 +11,27 @@
 
 from oed import OeD
 from oed.laboratory import Laboratory
+from oed.engines.os import OSPlatform
 
 from tests.usecases.stubs import PackagesStub
 
 from unittest  import TestCase
 
 
+
+class TestPlatform(OSPlatform):
+
+    def _execute_script(self):
+        with open("tests/data/sample_pytest_output.log", "r", encoding="utf-16") as sample_output:
+           return sample_output.readlines()
+        #return ["= 1 failed, 1537 passed, 24 skipped, 8 xfailed, 25 xpassed, 7 warnings in 325.63s (0:05:25) \n"]
+    
+
 class TestOeD(TestCase):
 
     def setUp(self):
         packages = PackagesStub()
-        laboratory = Laboratory()
+        laboratory = Laboratory(platform=TestPlatform())
         self.system = OeD(packages, laboratory)
 
 
@@ -36,6 +46,6 @@ class TestOeD(TestCase):
                                                             and r.object == "alabaster==1.0")
         self.assertEqual(1, len(experiments))
         self.assertTrue(experiments[0].is_complete)
-        self.assertEqual(1581, experiments[0].results.test_count)
+        self.assertEqual(1595, experiments[0].results.test_count)
 
-        # 1524 passed, 24 skipped, 8 xfailed, 25 xpassed, 6 warnings in 263.43s (0:04:23) 
+        # 1 failed, 1537 passed, 24 skipped, 8 xfailed, 25 xpassed,

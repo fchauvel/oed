@@ -19,7 +19,6 @@ from unittest import TestCase
 
         
 class SelectOeD(TestCase):
-
     
     def setUp(self):
         self.packages = PackagesStub()

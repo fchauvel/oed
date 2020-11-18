@@ -50,11 +50,16 @@ class Experiment:
 
 class Results:
 
+    def __init__(self, passed_count, skipped_count=0, failed_count=0, error_count=0):
+        self._passed_count = passed_count
+        self._skipped_count = skipped_count
+        self._failed_count = failed_count
+        self._error_count = error_count
+
     @property
     def test_count(self):
-        return 1581 # Fake
-
-
+        return self._passed_count + self._skipped_count \
+                + self._failed_count + self._error_count
 
 
 class Platform:
@@ -63,51 +68,6 @@ class Platform:
     def run(self, experiment):
         pass
 
-
-class OSPlatform(Platform):
-
-    def __init__(self, workspace=None, shell=None):
-        super().__init__()
-        self._workspace = workspace or "tmp-test"
-        self._shell = shell or Shell()
-
-    def run(self, experiment):
-            return Results()        
-
-    def _open_shell(self):
-        self._shell.start()
-
-    def _close_shell(self):
-        self._shell.close()
-
-    def _setup_working_directory(self, name="whatever"):
-        command = "mkdir {}\\{}".format(self._workspace, name)
-        self._shell.execute(command)
-
-    def _fetch_source_code(self, vcs_url):
-        command = ["git", "clone", vcs_url, "sources"]
-        self._shell.execute(command)
-
-    def _create_virtual_environment(self):
-        command = ["virtualenv", ".venv"]
-        self._shell.execute(command)
-        command = [".\\.venv\\Scripts\\activate.ps1"]
-        self._shell.execute(command)
-
-    def _activate_resolution(self, package, version):
-        command = ["pip", "install", "--force", "{}=={}".format(package, version)]
-        self._shell.execute(command)
-
-    def _install_dependencies(self):
-        command = ["pip", "install", "-r", "requirements.txt"]
-        self._shell.execute(command)
-
-    def _install(self, package, version):
-        command = ["pip", "install", ".", "{}=={}".format(package, version)]
-        self._shell.execute(command)
-
-    def run_tests(self):
-        return Results()
 
 
 class Experiments:
@@ -131,7 +91,7 @@ class Laboratory:
 
     def __init__(self, experiments=None, platform=None):
         self._experiments = experiments or Experiments()
-        self._platform = platform or OSPlatform()
+        self._platform = platform
 
     def new_experiment(self, source_package_name, source_release_name, required_package_name, required_release_name):
         experiment = Experiment(self._platform, 

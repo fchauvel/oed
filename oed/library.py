@@ -79,6 +79,7 @@ class Release:
         return requirements
 
     
+    
 class Requirement:
 
     def __init__(self, packages, specification):
