@@ -28,7 +28,7 @@ class OSPlatform(Platform):
         self._prepare_workspace()
         self._generate_script(experiment)
         output = self._execute_script()
-        return self._extract_results(output) # Fake   
+        return PyTestReader().extract_results(output) 
 
     def _prepare_workspace(self):
         from os import makedirs
@@ -74,27 +74,31 @@ class OSPlatform(Platform):
     EXPERIMENT_LOG = "experiment.log"
 
 
-    def _extract_results(self, output):
-        import re
-        passed = Extractor("(\\d+) passed")
-        xpassed = Extractor("(\\d+) xpassed")
-        failed = Extractor("(\\d+) failed")
-        xfailed = Extractor("(\\d+) xfailed")
-        skipped = Extractor("(\\d+) skipped")
-        error = Extractor("(\\d+) errors?")
-        for any_line in output:
-            passed.scrutinize(any_line)
-            xpassed.scrutinize(any_line)
-            failed.scrutinize(any_line)
-            xfailed.scrutinize(any_line)
-            skipped.scrutinize(any_line)
-            error.scrutinize(any_line)
-        print(passed.value, xpassed.value, failed.value, xfailed.value,  skipped.value, error.value)
-        return Results( passed.value + xfailed.value, 
-                        skipped.value, 
-                        failed.value + xpassed.value, 
-                        error.value)
+class  PyTestReader:
+   
+    def __init__(self):
+        self._extractors = []
+        self._passed = self._create("(\\d+) passed")
+        self._xpassed = self._create("(\\d+) xpassed")
+        self._failed = self._create("(\\d+) failed")
+        self._xfailed = self._create("(\\d+) xfailed")
+        self._skipped = self._create("(\\d+) skipped")
+        self._error = self._create("(\\d+) errors?")
 
+    def _create(self, pattern):
+        extractor = Extractor(pattern)
+        self._extractors.append(extractor)
+        return extractor   
+
+    def extract_results(self, output):
+        for each_line in output:
+            for each_extractor in self._extractors:
+                each_extractor.scrutinize(each_line)
+
+        return Results( self._passed.value + self._xfailed.value, 
+                        self._skipped.value, 
+                        self._failed.value + self._xpassed.value, 
+                        self._error.value)
 
 class Extractor:
 
@@ -106,7 +110,7 @@ class Extractor:
         found = search(self._pattern, text)
         if found:
             if self._count is not None:
-                print("Warning: Multiple match!")
+                print("Warning: Overriding previous value!")
             self._count = int(found.group(1))
 
     @property
