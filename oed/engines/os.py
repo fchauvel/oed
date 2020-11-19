@@ -76,16 +76,10 @@ class OSPlatform(Platform):
     EXPERIMENT_LOG = "experiment.log"
 
 
-class  PyTestReader:
+class OutputReader:
 
     def __init__(self):
         self._extractors = []
-        self._passed = self._create("(\\d+) passed")
-        self._xpassed = self._create("(\\d+) xpassed")
-        self._failed = self._create("(\\d+) failed")
-        self._xfailed = self._create("(\\d+) xfailed")
-        self._skipped = self._create("(\\d+) skipped")
-        self._error = self._create("(\\d+) errors?")
 
     def _create(self, pattern):
         extractor = Extractor(pattern)
@@ -96,7 +90,25 @@ class  PyTestReader:
         for each_line in output:
             for each_extractor in self._extractors:
                 each_extractor.scrutinize(each_line)
+        self._fill_in(results)
 
+    def _fill_in(self, results):
+        pass
+
+
+
+class  PyTestReader(OutputReader):
+
+    def __init__(self):
+        super().__init__()
+        self._passed = self._create("(\\d+) passed")
+        self._xpassed = self._create("(\\d+) xpassed")
+        self._failed = self._create("(\\d+) failed")
+        self._xfailed = self._create("(\\d+) xfailed")
+        self._skipped = self._create("(\\d+) skipped")
+        self._error = self._create("(\\d+) errors?")
+
+    def _fill_in(self, results):
         results.set_passed_tests_count(self._passed.value \
                                        + self._xfailed.value)
         results.set_skipped_tests_count(self._skipped.value)
@@ -105,15 +117,14 @@ class  PyTestReader:
         results.set_error_tests_count(self._error.value)
 
 
-class CoverageReader:
+
+class CoverageReader(OutputReader):
 
     def __init__(self):
+        super().__init__()
         self._coverage = \
-            Extractor("TOTAL\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s+(\\d+)%")
-
-    def extract_results(self, output, results):
-        for each_line in output:
-            self._coverage.scrutinize(each_line)
+            self._create("TOTAL\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s+(\\d+)%")
+    def _fill_in(self, results):
         results.set_test_coverage(self._coverage.value)
 
 
