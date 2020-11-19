@@ -107,8 +107,14 @@ class  PyTestReader:
 
 class CoverageReader:
 
+    def __init__(self):
+        self._coverage = \
+            Extractor("TOTAL\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s+(\\d+)%")
+
     def extract_results(self, output, results):
-        results.set_test_coverage(81.1)
+        for each_line in output:
+            self._coverage.scrutinize(each_line)
+        results.set_test_coverage(self._coverage.value)
 
 
 class Extractor:
