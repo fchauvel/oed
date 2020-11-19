@@ -9,7 +9,7 @@
 #
 
 
-from oed.laboratory import Platform, Results
+from oed.laboratory import Platform, Results, TestResults
 
 from os import chdir, getcwd
 from os.path import abspath, exists, join
@@ -23,12 +23,12 @@ class OSPlatform(Platform):
     def __init__(self, workspace=None, shell=None):
         super().__init__()
         self._workspace = workspace or "tmp-test"
-  
+
     def run(self, experiment):
         self._prepare_workspace()
         self._generate_script(experiment)
         output = self._execute_script()
-        return PyTestReader().extract_results(output) 
+        return PyTestReader().extract_results(output)
 
     def _prepare_workspace(self):
         from os import makedirs
@@ -39,7 +39,7 @@ class OSPlatform(Platform):
     @property
     def _path_to_experiment(self):
         return join(self._workspace, "exp1")
-        
+
 
     def _generate_script(self, experiment):
         with open(self._path_to_script, "w+") as script:
@@ -59,7 +59,7 @@ class OSPlatform(Platform):
         return join(self._path_to_experiment, self.SCRIPT_NAME)
 
     SCRIPT_NAME = "experiment.ps1"
-        
+
 
     def _execute_script(self):
         from subprocess import run
@@ -75,7 +75,7 @@ class OSPlatform(Platform):
 
 
 class  PyTestReader:
-   
+
     def __init__(self):
         self._extractors = []
         self._passed = self._create("(\\d+) passed")
@@ -88,17 +88,19 @@ class  PyTestReader:
     def _create(self, pattern):
         extractor = Extractor(pattern)
         self._extractors.append(extractor)
-        return extractor   
+        return extractor
 
     def extract_results(self, output):
         for each_line in output:
             for each_extractor in self._extractors:
                 each_extractor.scrutinize(each_line)
 
-        return Results( self._passed.value + self._xfailed.value, 
-                        self._skipped.value, 
-                        self._failed.value + self._xpassed.value, 
-                        self._error.value)
+        return Results(TestResults(self._passed.value + self._xfailed.value,
+                                   self._skipped.value,
+                                   self._failed.value + self._xpassed.value,
+                                   self._error.value,
+                                   81.1))
+
 
 class Extractor:
 

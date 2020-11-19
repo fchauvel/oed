@@ -26,7 +26,7 @@ class Experiment:
         self._subject = "{}=={}".format(source_package_name, source_release_name)
         self._object = "{}=={}".format(required_package_name, target_release_name)
         self._test_results = None
-   
+
 
     def start(self):
         self._test_results = self._platform.run(self)
@@ -50,17 +50,37 @@ class Experiment:
 
 class Results:
 
-    def __init__(self, passed_count, skipped_count=0, failed_count=0, error_count=0):
+
+    def __init__(self, test_results):
+        self._test_results = test_results
+
+    @property
+    def tests(self):
+        return self._test_results
+
+
+
+class TestResults:
+
+    def __init__(self, passed_count,
+                 skipped_count=0,
+                 failed_count=0,
+                 error_count=0,
+                 coverage=None):
         self._passed_count = passed_count
         self._skipped_count = skipped_count
         self._failed_count = failed_count
         self._error_count = error_count
+        self._coverage = coverage
 
     @property
-    def test_count(self):
+    def count(self):
         return self._passed_count + self._skipped_count \
                 + self._failed_count + self._error_count
 
+    @property
+    def coverage(self):
+        return self._coverage
 
 class Platform:
     """Hides the way the experiment is run (e.g., locally, remotely, using Docker, using virtualenv)"""
@@ -94,10 +114,10 @@ class Laboratory:
         self._platform = platform
 
     def new_experiment(self, source_package_name, source_release_name, required_package_name, required_release_name):
-        experiment = Experiment(self._platform, 
-                                source_package_name, 
-                                source_release_name, 
-                                required_package_name, 
+        experiment = Experiment(self._platform,
+                                source_package_name,
+                                source_release_name,
+                                required_package_name,
                                 required_release_name)
         self._experiments.store(experiment)
         return experiment

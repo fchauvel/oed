@@ -22,10 +22,21 @@ from unittest  import TestCase
 class TestPlatform(OSPlatform):
 
     def _execute_script(self):
-        with open("tests/data/sample_pytest_output.log", "r", encoding="utf-16") as sample_output:
-           return sample_output.readlines()
-        #return ["= 1 failed, 1537 passed, 24 skipped, 8 xfailed, 25 xpassed, 7 warnings in 325.63s (0:05:25) \n"]
-    
+        return self._sample_output()
+        #return self._minimal_relevant_output()
+
+    def _sample_output(self):
+        with open("tests/data/sample_pytest_output.log",
+                  "r", encoding="utf-16") as sample_output:
+            return sample_output.readlines()
+
+    def _minimal_relevant_output(self):
+        return [
+            "= 1 failed, 1537 passed, 24 skipped, 8 xfailed, 25 xpassed, 7 warnings in 325.63s (0:05:25) \n",
+            "TOTAL                                           36332   6040  13652   1471    81%\n"
+            ]
+
+
 
 class TestOeD(TestCase):
 
@@ -37,7 +48,7 @@ class TestOeD(TestCase):
 
     def test_success_scenario(self):
         session = self.system.new_testing_session()
- 
+
         requirements = self.system.select("Sphinx", "1.0", "alabaster")
         session.add(requirements)
         session.start()
@@ -46,6 +57,8 @@ class TestOeD(TestCase):
                                                             and r.object == "alabaster==1.0")
         self.assertEqual(1, len(experiments))
         self.assertTrue(experiments[0].is_complete)
-        self.assertEqual(1595, experiments[0].results.test_count)
+        self.assertEqual(1595, experiments[0].results.tests.count)
+        self.assertAlmostEqual(81.0, experiments[0].results.tests.coverage,
+                               delta=0.5)
 
         # 1 failed, 1537 passed, 24 skipped, 8 xfailed, 25 xpassed,
