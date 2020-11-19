@@ -9,9 +9,11 @@
 #
 
 
+
 from oed.os import Shell
 
 from traceback  import print_exc
+
 
 
 class Experiment:
@@ -48,6 +50,38 @@ class Experiment:
         return self._test_results
 
 
+
+class ResultBuilder:
+
+    def __init__(self):
+        self._passed_tests_count = None
+        self._failed_tests_count = None
+        self._skipped_tests_count = None
+        self._error_tests_count = None
+        self._coverage = None
+
+    def set_passed_tests_count(self, count):
+        self._passed_tests_count = count
+
+    def set_failed_tests_count(self, count):
+        self._failed_tests_count = count
+
+    def set_skipped_tests_count(self, count):
+        self._skipped_tests_count = count
+
+    def set_error_tests_count(self, count):
+        self._error_tests_count = count
+
+    def set_test_coverage(self, coverage_percent):
+        self._coverage = coverage_percent
+
+    def build(self):
+        return Results(TestResults(self._passed_tests_count,
+                                   self._skipped_tests_count,
+                                   self._failed_tests_count,
+                                   self._error_tests_count,
+                                   self._coverage))
+
 class Results:
 
 
@@ -82,6 +116,8 @@ class TestResults:
     def coverage(self):
         return self._coverage
 
+
+    
 class Platform:
     """Hides the way the experiment is run (e.g., locally, remotely, using Docker, using virtualenv)"""
 

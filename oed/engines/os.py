@@ -9,7 +9,7 @@
 #
 
 
-from oed.laboratory import Platform, Results, TestResults
+from oed.laboratory import Platform, ResultBuilder
 
 from os import chdir, getcwd
 from os.path import abspath, exists, join
@@ -28,7 +28,10 @@ class OSPlatform(Platform):
         self._prepare_workspace()
         self._generate_script(experiment)
         output = self._execute_script()
-        return PyTestReader().extract_results(output)
+        results = ResultBuilder()
+        PyTestReader().extract_results(output, results)
+        CoverageReader().extract_results(output, results)
+        return results.build()
 
     def _prepare_workspace(self):
         from os import makedirs
@@ -39,7 +42,6 @@ class OSPlatform(Platform):
     @property
     def _path_to_experiment(self):
         return join(self._workspace, "exp1")
-
 
     def _generate_script(self, experiment):
         with open(self._path_to_script, "w+") as script:
@@ -90,16 +92,23 @@ class  PyTestReader:
         self._extractors.append(extractor)
         return extractor
 
-    def extract_results(self, output):
+    def extract_results(self, output, results):
         for each_line in output:
             for each_extractor in self._extractors:
                 each_extractor.scrutinize(each_line)
 
-        return Results(TestResults(self._passed.value + self._xfailed.value,
-                                   self._skipped.value,
-                                   self._failed.value + self._xpassed.value,
-                                   self._error.value,
-                                   81.1))
+        results.set_passed_tests_count(self._passed.value \
+                                       + self._xfailed.value)
+        results.set_skipped_tests_count(self._skipped.value)
+        results.set_failed_tests_count(self._failed.value \
+                                       + self._xpassed.value)
+        results.set_error_tests_count(self._error.value)
+
+
+class CoverageReader:
+
+    def extract_results(self, output, results):
+        results.set_test_coverage(81.1)
 
 
 class Extractor:
