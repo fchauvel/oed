@@ -14,7 +14,9 @@ from oed.laboratory import Platform, ResultBuilder
 from os import chdir, getcwd
 from os.path import abspath, exists, join
 
-from re import search
+from re import search, findall
+
+from urllib.request import urlopen
 
 
 class OSPlatform(Platform):
@@ -25,7 +27,9 @@ class OSPlatform(Platform):
         self._workspace = workspace or "tmp-test"
 
     def run(self, experiment):
+
         self._prepare_workspace()
+
         self._generate_script(experiment)
         output = self._execute_script()
         results = ResultBuilder()
@@ -44,8 +48,9 @@ class OSPlatform(Platform):
         return join(self._workspace, "exp1")
 
     def _generate_script(self, experiment):
+        vcs_url = self._check_vcs_url(experiment)
         with open(self._path_to_script, "w+") as script:
-            script.write("git clone {vcs_url} sources\n".format(vcs_url=experiment._vcs_url))
+            script.write("git clone {vcs_url} sources\n".format(vcs_url=vcs_url))
             script.write("cd sources\n")
             script.write("git fetch tags/{tag} -b sut\n".format(tag="v2.4.4")) # Fake
             script.write("virtualenv .venv\n")
@@ -56,11 +61,49 @@ class OSPlatform(Platform):
             script.write("coverage combine\n")
             script.write("coverage report\n")
 
+                         
     @property
     def _path_to_script(self):
         return join(self._path_to_experiment, self.SCRIPT_NAME)
 
     SCRIPT_NAME = "experiment.ps1"
+
+
+    def _check_vcs_url(self, experiment):
+        url = experiment._vcs_url
+        if self._is_known_VCS(url):
+            return url
+        else:
+            content = self._fetch_content(url)
+            urls = self._extract_all_urls(content)
+            for any_url in urls:
+                if self._is_known_VCS(any_url):
+                    return any_url
+            else:
+                raise RuntimeError("Could not find a VCS URL!")
+
+
+    def _is_known_VCS(self, url):
+        return any(url.startswith(any_provider) \
+                   for any_provider in self.GIT_PROVIDERS)  
+
+    GIT_PROVIDERS = [ "https://github.com",
+                      "https://gitlab.com",
+                    ]
+                    
+    
+    def _fetch_content(self, url):
+        connection = urlopen(url)
+        return connection.read()
+        # Fake
+        # return "<a href=\"https://github.com/fchauvel/oed\">Github</a>"
+
+    
+    def _extract_all_urls(self, content):
+        return findall(self.URL_PATTERN, content)
+
+
+    URL_PATTERN = r'(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?'
 
 
     def _execute_script(self):
