@@ -9,7 +9,9 @@
 #
 
 
+
 from pkg_resources import Requirement as PKGRequirement
+
 
 
 class Packages:
@@ -35,13 +37,19 @@ class Packages:
     
 class Package:
 
-    def __init__(self, name, releases):
+    def __init__(self, name, releases, homepage=None):
         self._name = name
         self._releases = releases
+        self._homepage = homepage
 
     @property
     def name(self):
         return self._name
+
+    @property
+    def homepage(self):
+        return self._homepage
+    
 
     def __eq__(self,  other):
         if not isinstance(other, Package):

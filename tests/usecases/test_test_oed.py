@@ -37,7 +37,6 @@ class TestPlatform(OSPlatform):
             ]
 
 
-
 class TestOeD(TestCase):
 
     def setUp(self):

@@ -30,6 +30,7 @@ class TestingSession:
             for each_candidate_release in  each_requirement.candidate_releases:
                 self._oed.start_experiment("sphinx", # Fake
                                            "1.0", # Fake
+                                           "https://github.com/sphinx-doc/sPhinx",
                                            each_requirement, 
                                            each_candidate_release)
 
@@ -53,10 +54,11 @@ class OeD:
     def experiments(self):
         return self._laboratory.experiments
 
-    def start_experiment(self, source_package, source_release, requirement, selected_release):
+    def start_experiment(self, source_package, source_release, vcs_url, requirement, selected_release):
         experiment = self._laboratory.new_experiment(
             source_package,
             source_release,
+            vcs_url,
             requirement.required_package.name,
             selected_release.name
         )

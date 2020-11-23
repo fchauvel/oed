@@ -18,13 +18,13 @@ from traceback  import print_exc
 
 class Experiment:
 
-    def __init__(self, platform, source_package_name, source_release_name, required_package_name, target_release_name):
+    def __init__(self, platform, source_package_name, source_release_name, vcs_url, required_package_name, target_release_name):
         self._platform = platform
         self._source_package_name = source_package_name
         self._source_release_name = source_release_name
         self._required_package_name  = required_package_name
         self._target_release_name = target_release_name
-        self._vcs_url = "https://github.com/sphinx-doc/sphinx.git"
+        self._vcs_url = vcs_url,
         self._subject = "{}=={}".format(source_package_name, source_release_name)
         self._object = "{}=={}".format(required_package_name, target_release_name)
         self._test_results = None
@@ -76,6 +76,7 @@ class ResultBuilder:
         self._coverage = coverage_percent
 
     def build(self):
+        
         return Results(TestResults(self._passed_tests_count,
                                    self._skipped_tests_count,
                                    self._failed_tests_count,
@@ -149,10 +150,11 @@ class Laboratory:
         self._experiments = experiments or Experiments()
         self._platform = platform
 
-    def new_experiment(self, source_package_name, source_release_name, required_package_name, required_release_name):
+    def new_experiment(self, source_package_name, source_release_name, vcs_url, required_package_name, required_release_name):
         experiment = Experiment(self._platform,
                                 source_package_name,
                                 source_release_name,
+                                vcs_url,
                                 required_package_name,
                                 required_release_name)
         self._experiments.store(experiment)
