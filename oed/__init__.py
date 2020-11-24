@@ -28,9 +28,11 @@ class TestingSession:
     def start(self):
         for each_requirement in self._target_requirements:
             for each_candidate_release in  each_requirement.candidate_releases:
+                vcs = "https://www.sphinx-doc.org/en/master/"
+                #vcs = "https://github.com/sphinx-doc/sphinx",
                 self._oed.start_experiment("sphinx", # Fake
                                            "1.0", # Fake
-                                           "https://github.com/sphinx-doc/sPhinx",
+                                           vcs,
                                            each_requirement, 
                                            each_candidate_release)
 

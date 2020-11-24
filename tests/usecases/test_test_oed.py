@@ -36,6 +36,12 @@ class TestPlatform(OSPlatform):
             "TOTAL                                           36332   6040  13652   1471    81%\n"
             ]
 
+    def _fetch_content(self, url):
+        with open(self.SAMPLE_WEBPAGE, "r", encoding="iso-8859-1") as htmlfile:
+            return htmlfile.read()
+
+    SAMPLE_WEBPAGE = "tests/data/sphinx_homepage.html" 
+
 
 class TestOeD(TestCase):
 

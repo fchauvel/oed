@@ -10,13 +10,15 @@
 
 
 from oed.laboratory import Platform, ResultBuilder
+from oed.engines.vcs import Repository
 
 from os import chdir, getcwd
 from os.path import abspath, exists, join
 
 from re import search, findall
 
-from urllib.request import urlopen
+from urllib.request import build_opener
+
 
 
 class OSPlatform(Platform):
@@ -27,9 +29,7 @@ class OSPlatform(Platform):
         self._workspace = workspace or "tmp-test"
 
     def run(self, experiment):
-
         self._prepare_workspace()
-
         self._generate_script(experiment)
         output = self._execute_script()
         results = ResultBuilder()
@@ -48,9 +48,9 @@ class OSPlatform(Platform):
         return join(self._workspace, "exp1")
 
     def _generate_script(self, experiment):
-        vcs_url = self._check_vcs_url(experiment)
+        repository = self._check_vcs_url(experiment)
         with open(self._path_to_script, "w+") as script:
-            script.write("git clone {vcs_url} sources\n".format(vcs_url=vcs_url))
+            script.write("git clone {vcs_url} sources\n".format(vcs_url=repository))
             script.write("cd sources\n")
             script.write("git fetch tags/{tag} -b sut\n".format(tag="v2.4.4")) # Fake
             script.write("virtualenv .venv\n")
@@ -71,39 +71,35 @@ class OSPlatform(Platform):
 
     def _check_vcs_url(self, experiment):
         url = experiment._vcs_url
-        if self._is_known_VCS(url):
-            return url
+        repository = Repository.from_URL(url)
+        if repository:
+            return repository
         else:
             content = self._fetch_content(url)
-            urls = self._extract_all_urls(content)
-            for any_url in urls:
-                if self._is_known_VCS(any_url):
-                    return any_url
+            for any_url in self._extract_all_urls(content):
+                repository = Repository.from_URL(any_url)
+                if repository:
+                    print(repository.url)
+                    return repository
             else:
                 raise RuntimeError("Could not find a VCS URL!")
+        
 
-
-    def _is_known_VCS(self, url):
-        return any(url.startswith(any_provider) \
-                   for any_provider in self.GIT_PROVIDERS)  
-
-    GIT_PROVIDERS = [ "https://github.com",
-                      "https://gitlab.com",
-                    ]
-                    
-    
     def _fetch_content(self, url):
-        connection = urlopen(url)
-        return connection.read()
+        print("URL: ", url)
+        opener = build_opener()
+        opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
+        data = opener.open(url).read().decode("ISO-8859-1", errors="ignore")
         # Fake
         # return "<a href=\"https://github.com/fchauvel/oed\">Github</a>"
+        return data
 
     
     def _extract_all_urls(self, content):
-        return findall(self.URL_PATTERN, content)
+        matches = findall(self.URL_PATTERN, content)
+        return ["".join(m) for m in matches]
 
-
-    URL_PATTERN = r'(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?'
+    URL_PATTERN = r'(http|ftp|https)(://)([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?'
 
 
     def _execute_script(self):
