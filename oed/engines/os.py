@@ -52,7 +52,9 @@ class OSPlatform(Platform):
         with open(self._path_to_script, "w+") as script:
             script.write("git clone {vcs_url} sources\n".format(vcs_url=repository))
             script.write("cd sources\n")
-            script.write("git fetch tags/{tag} -b sut\n".format(tag="v2.4.4")) # Fake
+            
+            script.write("git fetch tags/{tag} -b sut\n"\
+                         .format(tag=repository.find_tag_for("2.4.4")))
             script.write("virtualenv .venv\n")
             script.write("./venv/Scripts/activate.ps1\n")
             script.write("pip install pytest coverage\n")
