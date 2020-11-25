@@ -10,7 +10,7 @@
 
 
 from oed.laboratory import Platform, ResultBuilder
-from oed.engines.vcs import Repository
+from oed.engines.vcs import RepositoryFactory
 
 from os import chdir, getcwd
 from os.path import abspath, exists, join
@@ -24,9 +24,10 @@ from urllib.request import build_opener
 class OSPlatform(Platform):
 
 
-    def __init__(self, workspace=None, shell=None):
+    def __init__(self, workspace=None, repositories=None):
         super().__init__()
         self._workspace = workspace or "tmp-test"
+        self._repositories = repositories or RepositoryFactory()
 
     def run(self, experiment):
         self._prepare_workspace()
@@ -50,7 +51,7 @@ class OSPlatform(Platform):
     def _generate_script(self, experiment):
         repository = self._check_vcs_url(experiment)
         with open(self._path_to_script, "w+") as script:
-            script.write("git clone {vcs_url} sources\n".format(vcs_url=repository))
+            script.write("git clone {vcs_url} sources\n".format(vcs_url=repository.clone_URL))
             script.write("cd sources\n")
             
             script.write("git fetch tags/{tag} -b sut\n"\
@@ -73,15 +74,14 @@ class OSPlatform(Platform):
 
     def _check_vcs_url(self, experiment):
         url = experiment._vcs_url
-        repository = Repository.from_URL(url)
+        repository = self._repositories.from_URL(url)
         if repository:
             return repository
         else:
             content = self._fetch_content(url)
             for any_url in self._extract_all_urls(content):
-                repository = Repository.from_URL(any_url)
+                repository = self._repositories.from_URL(any_url)
                 if repository:
-                    print(repository.url)
                     return repository
             else:
                 raise RuntimeError("Could not find a VCS URL!")
@@ -92,8 +92,6 @@ class OSPlatform(Platform):
         opener = build_opener()
         opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
         data = opener.open(url).read().decode("ISO-8859-1", errors="ignore")
-        # Fake
-        # return "<a href=\"https://github.com/fchauvel/oed\">Github</a>"
         return data
 
     
@@ -117,6 +115,7 @@ class OSPlatform(Platform):
     EXPERIMENT_LOG = "experiment.log"
 
 
+    
 class OutputReader:
 
     def __init__(self):

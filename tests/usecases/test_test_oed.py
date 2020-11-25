@@ -12,6 +12,9 @@
 from oed import OeD
 from oed.laboratory import Laboratory
 from oed.engines.os import OSPlatform
+from oed.engines.vcs import RepositoryFactory, Github
+
+from json import load as load_json_from
 
 from tests.usecases.stubs import PackagesStub
 
@@ -19,8 +22,27 @@ from unittest  import TestCase
 
 
 
+class FakeGithub(Github):
+
+    def __init__(self, organization, project):
+        super().__init__(organization, project)
+    
+    def _request_all_tags(self):
+        print("Using test data", self._SAMPLE_GITHUB_TAGS)
+        with open(self._SAMPLE_GITHUB_TAGS, "r") as sample_tags:
+            return load_json_from(sample_tags)
+
+    _SAMPLE_GITHUB_TAGS = "tests/data/sample_github_tags.json"
+
+    
+    
 class TestPlatform(OSPlatform):
 
+
+    def __init__(self):
+        super().__init__(workspace=None, repositories=RepositoryFactory([FakeGithub]))
+
+    
     def _execute_script(self):
         return self._sample_output()
         #return self._minimal_relevant_output()
